@@ -269,9 +269,17 @@ export default function Home() {
     <>
       <Head>
         <title>default pfps - mint your default pfp</title>
-        <meta name="description" content="Mint your default pfp using your base colors" />
+        <meta name="description" content="mint your default pfp using your base colors" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content="default pfps - mint your default pfp" />
+        <meta property="og:description" content="mint your default pfp using your base colors" />
+        <meta property="og:image" content="https://defaultpfps.xyz/og.png" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="default pfps - mint your default pfp" />
+        <meta name="twitter:description" content="mint your default pfp using your base colors" />
+        <meta name="twitter:image" content="https://defaultpfps.xyz/og.png" />
       </Head>
       <main className={`main ${inter.className}`} style={{ 
         minHeight: '100vh',
