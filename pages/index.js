@@ -297,7 +297,7 @@ export default function Home() {
           padding: '1rem 1.5rem',
           zIndex: 100,
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'space-around',
           alignItems: 'center',
           width: '100%'
         }}>
