@@ -84,7 +84,7 @@ export default function Home() {
   const [randomColorInput, setRandomColorInput] = useState('#54FF56')
   const canvasRef = useRef(null)
 
-  // Load default PFP on mount
+  // Load default pfp on mount
   useEffect(() => {
     setFilteredImage('/default_pfp.png')
   }, [])
@@ -176,7 +176,7 @@ export default function Home() {
     }
   }
 
-  // Apply color filter to default PFP
+  // Apply color filter to default pfp
   const applyColorFilter = (colorHex) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -268,7 +268,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Default PFPs - Mint Your Base Colors PFP</title>
+        <title>default pfps - mint your default pfp</title>
         <meta name="description" content="Mint your default pfp using your base colors" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
@@ -293,7 +293,7 @@ export default function Home() {
           alignItems: 'center',
           width: '100%'
         }}>
-          <h2 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>Default PFPs</h2>
+          <h2 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>default pfps</h2>
           <button
             onClick={walletAddress ? null : connectWallet}
             disabled={isLoading}
@@ -332,10 +332,10 @@ export default function Home() {
         <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem 1.5rem' }}>
           <div style={{ marginBottom: '2rem' }}>
             <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>
-              Mint Your Base Colors PFP
+              mint your default pfp
             </h1>
             <p style={{ color: '#666', fontSize: '0.875rem', margin: 0 }}>
-              Select a color from your collection to create your default pfp
+              select a color your base color. mint your default pfp.
             </p>
           </div>
 
@@ -350,7 +350,7 @@ export default function Home() {
                 />
                 <img 
                   src={filteredImage}
-                  alt="Default PFP"
+                  alt="default pfp"
                   style={{ 
                     maxWidth: '100%',
                     width: '100%',
@@ -367,9 +367,9 @@ export default function Home() {
                   fontSize: '0.75rem',
                   textAlign: 'center'
                 }}>
-                  Default PFP {randomColorInput}
+                  default pfp {randomColorInput}
                 </p>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
                   <button
                     onClick={downloadPFP}
                     style={{
@@ -485,14 +485,14 @@ export default function Home() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   {/* Preview - Show first */}
                   <div>
-                    <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>Preview</h3>
+                    <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>preview</h3>
                     <canvas
                       ref={canvasRef}
                       style={{ display: 'none' }}
                     />
                     <img 
                       src={filteredImage || '/default_pfp.png'}
-                      alt="Default PFP"
+                      alt="default pfp"
                       style={{ 
                         maxWidth: '100%',
                         width: '100%',
@@ -510,7 +510,7 @@ export default function Home() {
                         fontSize: '0.75rem',
                         textAlign: 'center'
                       }}>
-                        Default PFP {selectedColor.hex}
+                        default pfp {selectedColor.hex}
                       </p>
                     )}
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -586,9 +586,6 @@ export default function Home() {
                             background: color.hex,
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            border: selectedColor?.tokenId === color.tokenId 
-                              ? '2px solid #fff' 
-                              : '2px solid #1a1a1a',
                             transition: 'all 0.15s',
                             position: 'relative',
                             boxShadow: selectedColor?.tokenId === color.tokenId 
@@ -621,9 +618,9 @@ export default function Home() {
                             }}>
                               <FiCheck 
                                 size={20}
-                                color="#fff"
+                                color="rgba(0, 0, 0, 0.5)"
                                 style={{ 
-                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
+                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
                                   strokeWidth: 3
                                 }}
                               />
