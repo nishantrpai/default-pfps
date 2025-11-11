@@ -343,7 +343,7 @@ export default function Home() {
               mint your default pfp
             </h1>
             <p style={{ color: '#666', fontSize: '0.875rem', margin: 0 }}>
-              select a color your base color. mint your default pfp.
+              select your base color. mint your default pfp.
             </p>
           </div>
 
