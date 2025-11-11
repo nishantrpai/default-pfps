@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useState, useEffect, useRef } from 'react'
 import { ethers } from 'ethers'
 import { Inter } from 'next/font/google'
+import { FiCheck } from 'react-icons/fi'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -79,8 +80,14 @@ export default function Home() {
   const [userColors, setUserColors] = useState([])
   const [selectedColor, setSelectedColor] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [filteredImage, setFilteredImage] = useState(null)
+  const [filteredImage, setFilteredImage] = useState('/default_pfp.png')
+  const [randomColorInput, setRandomColorInput] = useState('#54FF56')
   const canvasRef = useRef(null)
+
+  // Load default PFP on mount
+  useEffect(() => {
+    setFilteredImage('/default_pfp.png')
+  }, [])
 
   // Connect wallet
   const connectWallet = async () => {
@@ -234,11 +241,27 @@ export default function Home() {
 
   // Download filtered PFP
   const downloadPFP = () => {
-    if (!filteredImage || !selectedColor) return
+    const canvas = canvasRef.current
+    if (!canvas) return
     
+    const colorHex = selectedColor ? selectedColor.hex : randomColorInput
+    
+    // Create a temporary canvas for download
+    const tempCanvas = document.createElement('canvas')
+    const tempContext = tempCanvas.getContext('2d')
+    tempCanvas.width = canvas.width
+    tempCanvas.height = canvas.height
+
+    // Draw black background
+    tempContext.fillStyle = 'black'
+    tempContext.fillRect(0, 0, tempCanvas.width, tempCanvas.height)
+
+    // Draw the filtered image on top
+    tempContext.drawImage(canvas, 0, 0)
+
     const link = document.createElement('a')
-    link.download = `default-pfp-${selectedColor.hex.replace('#', '')}.png`
-    link.href = filteredImage
+    link.download = `default-pfp-${colorHex.replace('#', '')}.png`
+    link.href = tempCanvas.toDataURL('image/png')
     link.click()
   }
 
@@ -262,78 +285,192 @@ export default function Home() {
           position: 'sticky',
           top: 0,
           background: '#000',
-          borderBottom: '1px solid #222',
-          padding: '1rem 2rem',
+          borderBottom: '1px solid #1a1a1a',
+          padding: '1rem 1.5rem',
+          zIndex: 100,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          zIndex: 100
+          width: '100%'
         }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Default PFPs</h2>
-          {!walletAddress ? (
-            <button
-              onClick={connectWallet}
-              disabled={isLoading}
-              style={{
-                background: 'transparent',
-                color: '#fff',
-                border: '1px solid #333',
-                padding: '0.5rem 1rem',
-                fontSize: '0.875rem',
-                borderRadius: '6px',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.5 : 1,
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => {
-                if (!isLoading) {
-                  e.target.style.background = '#111'
-                  e.target.style.borderColor = '#555'
-                }
-              }}
-              onMouseOut={(e) => {
+          <h2 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>Default PFPs</h2>
+          <button
+            onClick={walletAddress ? null : connectWallet}
+            disabled={isLoading}
+            style={{
+              background: 'transparent',
+              color: walletAddress ? '#999' : '#fff',
+              border: '1px solid #333',
+              padding: '0.5rem 0.875rem',
+              fontSize: '0.75rem',
+              borderRadius: '6px',
+              cursor: walletAddress ? 'default' : (isLoading ? 'not-allowed' : 'pointer'),
+              opacity: isLoading ? 0.5 : 1,
+              transition: 'all 0.2s',
+              fontFamily: walletAddress ? 'monospace' : 'inherit'
+            }}
+            onMouseOver={(e) => {
+              if (!isLoading && !walletAddress) {
+                e.target.style.background = '#111'
+                e.target.style.borderColor = '#555'
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!walletAddress) {
                 e.target.style.background = 'transparent'
                 e.target.style.borderColor = '#333'
-              }}
-            >
-              {isLoading ? 'Connecting...' : 'Connect Wallet'}
-            </button>
-          ) : (
-            <div style={{
-              background: '#111',
-              border: '1px solid #333',
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              fontFamily: 'monospace',
-              fontSize: '0.875rem'
-            }}>
-              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-            </div>
-          )}
+              }
+            }}
+          >
+            {walletAddress 
+              ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+              : (isLoading ? 'Connecting...' : 'Connect Wallet')
+            }
+          </button>
         </div>
 
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '1rem', textAlign: 'center' }}>
-            Mint Your Base Colors PFP
-          </h1>
-          <p style={{ textAlign: 'center', color: '#999', marginBottom: '3rem' }}>
-            Select a color from your collection to create your default pfp
-          </p>
+        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+          <div style={{ marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>
+              Mint Your Base Colors PFP
+            </h1>
+            <p style={{ color: '#666', fontSize: '0.875rem', margin: 0 }}>
+              Select a color from your collection to create your default pfp
+            </p>
+          </div>
 
           {!walletAddress ? (
-            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-              <p style={{ color: '#666', fontSize: '1.125rem' }}>Connect your wallet to get started</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Preview */}
+              <div>
+                <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>Preview</h3>
+                <canvas
+                  ref={canvasRef}
+                  style={{ display: 'none' }}
+                />
+                <img 
+                  src={filteredImage}
+                  alt="Default PFP"
+                  style={{ 
+                    maxWidth: '100%',
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    border: '1px solid #1a1a1a'
+                  }}
+                />
+                <p style={{ 
+                  color: '#666',
+                  marginBottom: '1rem',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  textAlign: 'center'
+                }}>
+                  Default PFP {randomColorInput}
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    onClick={downloadPFP}
+                    style={{
+                      background: 'transparent',
+                      color: '#fff',
+                      border: '1px solid #333',
+                      padding: '0.625rem 1rem',
+                      fontSize: '0.75rem',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      width: 'auto'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.background = '#111'
+                      e.target.style.borderColor = '#555'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.background = 'transparent'
+                      e.target.style.borderColor = '#333'
+                    }}
+                  >
+                    Download
+                  </button>
+                  <button
+                    style={{
+                      background: 'transparent',
+                      color: '#666',
+                      border: '1px solid #222',
+                      padding: '0.625rem 1rem',
+                      fontSize: '0.75rem',
+                      borderRadius: '6px',
+                      cursor: 'not-allowed',
+                      opacity: 0.5,
+                      width: 'auto'
+                    }}
+                    disabled
+                  >
+                    Mint (Soon)
+                  </button>
+                </div>
+              </div>
+
+              {/* Random Color Picker */}
+              <div>
+                <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>Try a Color</h3>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="color"
+                    value={randomColorInput}
+                    onChange={(e) => {
+                      setRandomColorInput(e.target.value)
+                      applyColorFilter(e.target.value)
+                    }}
+                    style={{
+                      width: '60px',
+                      height: '40px',
+                      border: '1px solid #333',
+                      borderRadius: '6px',
+                      background: 'transparent',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={randomColorInput}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setRandomColorInput(value)
+                      if (/^#[0-9A-F]{6}$/i.test(value)) {
+                        applyColorFilter(value)
+                      }
+                    }}
+                    placeholder="#54FF56"
+                    style={{
+                      flex: 1,
+                      background: '#0a0a0a',
+                      border: '1px solid #1a1a1a',
+                      borderRadius: '6px',
+                      padding: '0.625rem 0.875rem',
+                      fontSize: '0.75rem',
+                      color: '#fff',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                </div>
+                <p style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#666' }}>
+                  Connect your wallet to mint with your Base Colors
+                </p>
+              </div>
             </div>
           ) : (
             <div>
               {isLoading ? (
                 <div style={{ textAlign: 'center', padding: '3rem' }}>
-                  <p>Loading your Base Colors...</p>
+                  <p style={{ fontSize: '0.875rem', color: '#666' }}>Loading your Base Colors...</p>
                 </div>
               ) : userColors.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '3rem' }}>
-                  <p style={{ color: '#666' }}>No Base Colors found in your wallet.</p>
-                  <p style={{ color: '#666', marginTop: '1rem' }}>
+                  <p style={{ color: '#666', fontSize: '0.875rem' }}>No Base Colors found in your wallet.</p>
+                  <p style={{ color: '#666', marginTop: '1rem', fontSize: '0.875rem' }}>
                     <a 
                       href="https://basecolors.com" 
                       target="_blank" 
@@ -345,19 +482,99 @@ export default function Home() {
                   </p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {/* Preview - Show first */}
+                  <div>
+                    <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>Preview</h3>
+                    <canvas
+                      ref={canvasRef}
+                      style={{ display: 'none' }}
+                    />
+                    <img 
+                      src={filteredImage || '/default_pfp.png'}
+                      alt="Default PFP"
+                      style={{ 
+                        maxWidth: '100%',
+                        width: '100%',
+                        height: 'auto',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        border: '1px solid #1a1a1a'
+                      }}
+                    />
+                    {selectedColor && (
+                      <p style={{ 
+                        color: '#666',
+                        marginBottom: '1rem',
+                        fontFamily: 'monospace',
+                        fontSize: '0.75rem',
+                        textAlign: 'center'
+                      }}>
+                        Default PFP {selectedColor.hex}
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={downloadPFP}
+                        disabled={!selectedColor}
+                        style={{
+                          background: 'transparent',
+                          color: selectedColor ? '#fff' : '#666',
+                          border: '1px solid #333',
+                          padding: '0.625rem 1rem',
+                          fontSize: '0.75rem',
+                          borderRadius: '6px',
+                          cursor: selectedColor ? 'pointer' : 'not-allowed',
+                          transition: 'all 0.2s',
+                          opacity: selectedColor ? 1 : 0.5,
+                          width: 'auto'
+                        }}
+                        onMouseOver={(e) => {
+                          if (selectedColor) {
+                            e.target.style.background = '#111'
+                            e.target.style.borderColor = '#555'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (selectedColor) {
+                            e.target.style.background = 'transparent'
+                            e.target.style.borderColor = '#333'
+                          }
+                        }}
+                      >
+                        Download
+                      </button>
+                      <button
+                        style={{
+                          background: 'transparent',
+                          color: '#666',
+                          border: '1px solid #222',
+                          padding: '0.625rem 1rem',
+                          fontSize: '0.75rem',
+                          borderRadius: '6px',
+                          cursor: 'not-allowed',
+                          opacity: 0.5,
+                          width: 'auto'
+                        }}
+                        disabled
+                      >
+                        Mint (Soon)
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Colors Grid */}
-                  <div style={{ flex: '1', minWidth: '300px' }}>
-                    <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: '#999' }}>Your Base Colors ({userColors.length})</h3>
+                  <div>
+                    <h3 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: '#999', fontWeight: 500 }}>Your Base Colors ({userColors.length})</h3>
                     <div style={{ 
                       display: 'grid', 
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
-                      gap: '0.75rem',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
+                      gap: '0.5rem',
                       padding: '1rem',
                       background: '#0a0a0a',
-                      border: '1px solid #222',
-                      borderRadius: '12px',
-                      maxHeight: '600px',
+                      border: '1px solid #1a1a1a',
+                      borderRadius: '8px',
+                      maxHeight: '400px',
                       overflowY: 'auto'
                     }}>
                       {userColors.map((color) => (
@@ -367,26 +584,28 @@ export default function Home() {
                           style={{
                             aspectRatio: '1',
                             background: color.hex,
-                            borderRadius: '6px',
+                            borderRadius: '4px',
                             cursor: 'pointer',
                             border: selectedColor?.tokenId === color.tokenId 
                               ? '2px solid #fff' 
-                              : '2px solid #222',
-                            transition: 'all 0.2s',
+                              : '2px solid #1a1a1a',
+                            transition: 'all 0.15s',
                             position: 'relative',
                             boxShadow: selectedColor?.tokenId === color.tokenId 
-                              ? '0 0 0 4px rgba(255,255,255,0.1)' 
+                              ? '0 0 0 3px rgba(255,255,255,0.1)' 
                               : 'none'
                           }}
                           title={color.hex}
                           onMouseOver={(e) => {
                             if (selectedColor?.tokenId !== color.tokenId) {
-                              e.currentTarget.style.borderColor = '#444'
+                              e.currentTarget.style.borderColor = '#333'
+                              e.currentTarget.style.transform = 'scale(1.05)'
                             }
                           }}
                           onMouseOut={(e) => {
                             if (selectedColor?.tokenId !== color.tokenId) {
-                              e.currentTarget.style.borderColor = '#222'
+                              e.currentTarget.style.borderColor = '#1a1a1a'
+                              e.currentTarget.style.transform = 'scale(1)'
                             }
                           }}
                         >
@@ -396,103 +615,22 @@ export default function Home() {
                               top: '50%',
                               left: '50%',
                               transform: 'translate(-50%, -50%)',
-                              fontSize: '1.5rem',
-                              color: '#fff',
-                              textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                              fontWeight: 'bold'
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
                             }}>
-                              ✓
+                              <FiCheck 
+                                size={20}
+                                color="#fff"
+                                style={{ 
+                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
+                                  strokeWidth: 3
+                                }}
+                              />
                             </div>
                           )}
                         </div>
                       ))}
-                    </div>
-                  </div>
-
-                  {/* Preview */}
-                  <div style={{ flex: '1', minWidth: '300px' }}>
-                    <h3 style={{ marginBottom: '1rem' }}>Preview</h3>
-                    <div style={{ 
-                      background: '#0a0a0a',
-                      border: '1px solid #222',
-                      borderRadius: '12px',
-                      padding: '2rem',
-                      textAlign: 'center'
-                    }}>
-                      <canvas
-                        ref={canvasRef}
-                        style={{ 
-                          display: 'none'
-                        }}
-                      />
-                      {selectedColor ? (
-                        <>
-                          <img 
-                            src={filteredImage || '/default_pfp.png'}
-                            alt="Default PFP"
-                            style={{ 
-                              maxWidth: '100%',
-                              height: 'auto',
-                              borderRadius: '12px',
-                              marginBottom: '1.5rem',
-                              border: '1px solid #222'
-                            }}
-                          />
-                          <p style={{ 
-                            color: '#666',
-                            marginBottom: '1.5rem',
-                            fontFamily: 'monospace',
-                            fontSize: '0.875rem'
-                          }}>
-                            Default PFP {selectedColor.hex}
-                          </p>
-                          <button
-                            onClick={downloadPFP}
-                            style={{
-                              background: 'transparent',
-                              color: '#fff',
-                              border: '1px solid #333',
-                              padding: '0.75rem 1.5rem',
-                              fontSize: '0.875rem',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              marginBottom: '0.5rem',
-                              width: '100%',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseOver={(e) => {
-                              e.target.style.background = '#111'
-                              e.target.style.borderColor = '#555'
-                            }}
-                            onMouseOut={(e) => {
-                              e.target.style.background = 'transparent'
-                              e.target.style.borderColor = '#333'
-                            }}
-                          >
-                            Download
-                          </button>
-                          <button
-                            style={{
-                              background: 'transparent',
-                              color: '#666',
-                              border: '1px solid #222',
-                              padding: '0.75rem 1.5rem',
-                              fontSize: '0.875rem',
-                              borderRadius: '6px',
-                              cursor: 'not-allowed',
-                              opacity: 0.5,
-                              width: '100%'
-                            }}
-                            disabled
-                          >
-                            Mint (Coming Soon)
-                          </button>
-                        </>
-                      ) : (
-                        <div style={{ padding: '3rem' }}>
-                          <p style={{ color: '#999' }}>Select a color to preview</p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
